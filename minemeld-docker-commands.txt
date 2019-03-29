@@ -1,0 +1,144 @@
+docker commands
+
+https://github.com/jtschichold/minemeld-docker
+
+docker run -it -d --tmpfs /run -v /somewhere/minemeld/local:/opt/minemeld/local -p 9443:443 jtschichold/minemeld
+docker run -it -d --tmpfs /run -v /root/minemeld/local:/opt/minemeld/local -p 9443:443 jtschichold/minemeld
+
+
+[root@docker config]# docker ps
+CONTAINER ID        IMAGE                  COMMAND             CREATED             STATUS              PORTS                              NAMES
+5d53db2f4814        jtschichold/minemeld   "/sbin/my_init"     47 hours ago        Up 47 hours         13514/tcp, 0.0.0.0:9443->443/tcp   angry_pike
+f90ff936948d        infoslack/dvwa         "/run.sh"           10 months ago       Up 47 hours         80/tcp, 3306/tcp                   ecstatic_almeida
+[root@docker config]# docker restart ecstatic_almeida
+ecstatic_almeida
+[root@docker config]# docker ps
+CONTAINER ID        IMAGE                  COMMAND             CREATED             STATUS              PORTS                              NAMES
+5d53db2f4814        jtschichold/minemeld   "/sbin/my_init"     47 hours ago        Up 47 hours         13514/tcp, 0.0.0.0:9443->443/tcp   angry_pike
+f90ff936948d        infoslack/dvwa         "/run.sh"           10 months ago       Up 5 seconds        80/tcp, 3306/tcp                   ecstatic_almeida
+
+original
+https://10.100.248.9:8026/feeds/inboundfeedhc?tr=1&v=json
+
+[
+{"indicator":"113.201.51.0/24","value":null},
+{"indicator":"116.79.0.0/16","value":null},
+{"indicator":"118.26.116.0/22","value":null},
+{"indicator":"119.227.224.0/19","value":null},
+
+
+https://10.100.248.9:8026/feeds/inboundfeedhcvalues?tr=1&v=json
+
+[
+{"indicator":"113.201.51.0/24","value":{"sources":["spamhaus.EDROP"],"direction":"inbound","first_seen":1540134275877,"last_seen":1540134275877,"type":"IPv4","confidence":100,"share_level":"green"}},
+{"indicator":"116.79.0.0/16","value":{"sources":["spamhaus.EDROP"],"direction":"inbound","first_seen":1540134275877,"last_seen":1540134275877,"type":"IPv4","confidence":100,"share_level":"green"}},
+{"indicator":"118.26.116.0/22","value":{"sources":
+
+https://10.100.248.9:8026/feeds/inboundfeedhcvalues?tr=1&v=json&f=indicator&f=confidence&f=share_level
+
+indicator,confidence,share_level
+113.201.51.0/24,100,green
+116.79.0.0/16,100,green
+118.26.116.0/22,100,green
+119.227.224.0/19,100,green
+120.128.128.0/18,100,green
+120.128.192.0/18,100,green
+120.129.0.0/17,100,green
+
+https://10.100.248.9:8026/feeds/inboundfeedhcvalues?tr=1&v=csv&f=indicator&f=confidence&f=share_level&f=sources
+
+https://10.100.248.9:8026/feeds/outboundfeedhcvalues?tr=1&v=csv&f=indicator&f=confidence&f=share_level&f=sources
+openssl s_client -showcerts -connect 192.168.254.23:9443
+depth=0 C = IT, ST = PR, L = Parma, O = Palo Alto Networks, OU = TBD, CN = please use a real certificate, emailAddress = techbizedv@paloaltonetworks.com
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+depth=0 C = IT, ST = PR, L = Parma, O = Palo Alto Networks, OU = TBD, CN = please use a real certificate, emailAddress = techbizedv@paloaltonetworks.com
+verify error:num=21:unable to verify the first certificate
+verify return:1
+
+Certificate chain
+ 0 s:/C=IT/ST=PR/L=Parma/O=Palo Alto Networks/OU=TBD/CN=please use a real certificate/emailAddress=techbizedv@paloaltonetworks.com
+   i:/C=IT/ST=PR/L=Parma/O=Palo Alto Networks/OU=TBD/CN=please use a real certificate/emailAddress=techbizedv@paloaltonetworks.com
+
+
+https://community.rsa.com/docs/DOC-80984
+
+I know you mentioned following the SA DOCS procedure, but give this a shot:
+
+#---------------------
+Pull SSL CERT
+
+echo -n | openssl s_client -connect HOST:PORTNUMBER | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/$SERVERNAME.cert
+echo -n | openssl s_client -connect 192.168.254.23:9443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/$SERVERNAME.cert
+
+That will save the certificate to /tmp/$SERVERNAME.cert.
+
+To import SSL CERT into SA:
+
+keytool –importcert –alias <name an alias for the cert> -file <the cert file pathname>  -keystore /etc/pki/java/cacerts
+
+You will be prompted for password.  If the password hasn't been changed, the default password is "changeit".
+
+Owner: EMAILADDRESS=techbizedv@paloaltonetworks.com, CN=please use a real certificate, OU=TBD, O=Palo Alto Networks, L=Parma, ST=PR, C=IT
+Issuer: EMAILADDRESS=techbizedv@paloaltonetworks.com, CN=please use a real certificate, OU=TBD, O=Palo Alto Networks, L=Parma, ST=PR, C=IT
+Serial number: 1
+Valid from: Sat Sep 19 22:16:00 UTC 2015 until: Fri Sep 19 22:16:00 UTC 2025
+Certificate fingerprints:
+         MD5:  22:58:F0:26:6F:86:15:24:DF:D0:AE:FD:79:E7:CA:A0
+         SHA1: 45:9F:35:CF:CF:7A:7D:76:15:58:D5:D4:9A:EF:88:F1:B5:DE:15:AF
+         SHA256: 0B:99:A9:A5:06:61:51:0D:33:B2:19:53:B6:9C:AD:3C:25:A9:32:07:D5:01:D9:1C:DD:46:4C:26:49:37:22:02
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 1024-bit RSA key
+Version: 3
+
+Extensions:
+
+#1: ObjectId: 2.16.840.1.113730.1.13 Criticality=false
+0000: 16 0F 78 63 61 20 63 65   72 74 69 66 69 63 61 74  ..xca certificat
+0010: 65                                                 e
+
+
+#2: ObjectId: 2.5.29.19 Criticality=true
+BasicConstraints:[
+  CA:false
+  PathLen: undefined
+]
+
+#3: ObjectId: 2.5.29.15 Criticality=false
+KeyUsage [
+  DigitalSignature
+  Non_repudiation
+  Key_Encipherment
+]
+
+#4: ObjectId: 2.16.840.1.113730.1.1 Criticality=false
+NetscapeCertType [
+   SSL server
+]
+
+#5: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: BC 16 E4 E4 1C 50 B4 1A   F3 62 C8 54 3B 6C 6E 05  .....P...b.T;ln.
+0010: C2 92 3D CC                                        ..=.
+]
+]
+
+Trust this certificate? [no]:  yes
+Certificate was added to keystore
+
+logs here
+/var/netwitness/uax/logs/sa.log
+
+
+https://192.168.99.124/feeds/netname/networks.csv will not work because it is IP based and the cert is for the domain.
+As a work-around, add the server name (the one that is also referenced by the cert) into /etc/hosts
+
+https://build-server/feeds/netname/networks.csv
+
+The big change for me was adding the hostname to /etc/hosts and referencing that name when using the URL.
+
+
+If the cert was imported, was it a self signed cert?  Does the cert have just the hostname?  If it was just the hostname, was an entry made in the /etc/hosts file for just the hostname (not FQDN) to the IP address?
+
+If so, try with just the hostname.
